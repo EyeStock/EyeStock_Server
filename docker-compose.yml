@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  app-server:
+    image: happine2s/eye-stock
+    container_name: eye-server
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
