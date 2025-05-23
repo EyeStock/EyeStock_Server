@@ -20,26 +20,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      #      - name: Replace secrets in prod.yml  # application-prod.yml에 비밀값 동적 주입
-      #        run: |
-      #          cd ./src/main/resources
-      #          sed -i 's|${DB_URL}|'"${{ secrets.DB_URL }}"'|g' application-prod.yml
-      #          sed -i 's|${DB_USER}|'"${{ secrets.DB_USER }}"'|g' application-prod.yml
-      #          sed -i 's|${DB_PW}|'"${{ secrets.DB_PW }}"'|g' application-prod.yml
-
       - name: Grant execute permission for Gradle
         run: chmod +x gradlew
 
       - name: Build with Gradle
         run: ./gradlew clean build
 
-      - name: Docker build and push  # Docker 이미지 빌드 후 Docker Hub에 push
+      - name: Docker build and push
         run: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub 로그인
-          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .  # 이미지 빌드
-          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}  # Docker Hub에 push
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
 
-      - name: Create EC2 app directory  # EC2에서 앱 디렉토리 생성
+      - name: Create EC2 app directory
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -48,7 +41,7 @@ jobs:
           port: 22
           script: mkdir -p ~/app
 
-      - name: Copy docker-compose.yml to EC2  # docker-compose.yml을 EC2로 복사
+      - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -58,7 +51,7 @@ jobs:
           source: "docker-compose.yml"
           target: "~/app"
 
-      - name: Run Docker Compose on EC2  # EC2에서 Docker Compose로 앱 실행
+      - name: Run Docker Compose on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -66,27 +59,9 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
-                    cd ~/app
-                    
-                    # .env 파일에 환경변수 쓰기 (Docker Compose에서 참조)
-            #            echo "DB_URL=${{ secrets.DB_URL }}" > .env
-            #            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-            #            echo "DB_PW=${{ secrets.DB_PW }}" >> .env
-            #            echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
-            #            echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env
-
-            # 이전 컨테이너 정리
-                    sudo docker rm -f app-server || true
-            #            sudo docker rm -f redis-server || true
-
-            # 기존 Compose 환경 제거
-                    sudo docker-compose down || true
-
-            # 이전 이미지 제거
-                    sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} || true
-
-            # 최신 이미지 pull
-                    sudo docker-compose pull
-
-            # 컨테이너 실행
-                    sudo docker-compose up -d
+            cd ~/app
+            sudo docker rm -f app-server || true
+            sudo docker-compose down || true
+            sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} || true
+            sudo docker-compose pull
+            sudo docker-compose up -d
