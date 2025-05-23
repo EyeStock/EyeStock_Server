@@ -61,7 +61,7 @@ jobs:
           script: |
             cd ~/app
             sudo docker rm -f app-server || true
-            sudo docker-compose down || true
+            sudo docker compose down || true
             sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} || true
-            sudo docker-compose pull
-            sudo docker-compose up -d
+            sudo docker compose pull
+            sudo docker compose up -d
