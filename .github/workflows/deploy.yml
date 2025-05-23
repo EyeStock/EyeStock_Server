@@ -20,12 +20,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-#      - name: Replace secrets in prod.yml  # 3. application-prod.yml에 비밀값 동적 주입
-#        run: |
-#          cd ./src/main/resources
-#          sed -i 's|${DB_URL}|'"${{ secrets.DB_URL }}"'|g' application-prod.yml  # DB_URL 치환
-#          sed -i 's|${DB_USER}|'"${{ secrets.DB_USER }}"'|g' application-prod.yml  # DB_USER 치환
-#          sed -i 's|${DB_PW}|'"${{ secrets.DB_PW }}"'|g' application-prod.yml  # DB_PW 치환
+      #      - name: Replace secrets in prod.yml  # application-prod.yml에 비밀값 동적 주입
+      #        run: |
+      #          cd ./src/main/resources
+      #          sed -i 's|${DB_URL}|'"${{ secrets.DB_URL }}"'|g' application-prod.yml
+      #          sed -i 's|${DB_USER}|'"${{ secrets.DB_USER }}"'|g' application-prod.yml
+      #          sed -i 's|${DB_PW}|'"${{ secrets.DB_PW }}"'|g' application-prod.yml
 
       - name: Grant execute permission for Gradle
         run: chmod +x gradlew
@@ -33,20 +33,20 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build
 
-      - name: Docker build and push # Docker 이미지 빌드 후 Docker Hub에 push
+      - name: Docker build and push  # Docker 이미지 빌드 후 Docker Hub에 push
         run: |
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub 로그인
-            docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .  # 이미지 빌드
-            docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}  # Docker Hub에 push
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub 로그인
+          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .  # 이미지 빌드
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}  # Docker Hub에 push
 
       - name: Create EC2 app directory  # EC2에서 앱 디렉토리 생성
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}  # EC2 퍼블릭 IP
-          username: ${{ secrets.EC2_NAME }}  # EC2 사용자명 (보통 ubuntu)
-          key: ${{ secrets.EC2_KEY }}  # EC2 접속용 SSH 키
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_NAME }}
+          key: ${{ secrets.EC2_KEY }}
           port: 22
-          script: mkdir -p ~/app  # EC2에서 ~/app 디렉토리 생성
+          script: mkdir -p ~/app
 
       - name: Copy docker-compose.yml to EC2  # docker-compose.yml을 EC2로 복사
         uses: appleboy/scp-action@master
@@ -55,8 +55,8 @@ jobs:
           username: ${{ secrets.EC2_NAME }}
           key: ${{ secrets.EC2_KEY }}
           port: 22
-          source: "docker-compose.yml"  # 로컬에서 복사할 대상 파일
-          target: "~/app"               # EC2에서 복사할 위치
+          source: "docker-compose.yml"
+          target: "~/app"
 
       - name: Run Docker Compose on EC2  # EC2에서 Docker Compose로 앱 실행
         uses: appleboy/ssh-action@master
@@ -66,27 +66,27 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
-            cd ~/app  # 앱 디렉토리로 이동
-            
-            # .env 파일에 환경변수 쓰기 (Docker Compose에서 참조)
-#            echo "DB_URL=${{ secrets.DB_URL }}" > .env
-#            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-#            echo "DB_PW=${{ secrets.DB_PW }}" >> .env
-#            echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
-#            echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env
+                    cd ~/app
+                    
+                    # .env 파일에 환경변수 쓰기 (Docker Compose에서 참조)
+            #            echo "DB_URL=${{ secrets.DB_URL }}" > .env
+            #            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+            #            echo "DB_PW=${{ secrets.DB_PW }}" >> .env
+            #            echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
+            #            echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env
 
-            # 이전 컨테이너 정리 (app-server, redis-server 강제 종료 및 제거)
-            sudo docker rm -f app-server || true
-#            sudo docker rm -f redis-server || true
+            # 이전 컨테이너 정리
+                    sudo docker rm -f app-server || true
+            #            sudo docker rm -f redis-server || true
 
-            # 기존 Compose 환경 제거 (없어도 에러 발생 안 하게 처리)
-            sudo docker-compose down || true
+            # 기존 Compose 환경 제거
+                    sudo docker-compose down || true
 
-            # 이전 애플리케이션 이미지 제거
-            sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} || true
+            # 이전 이미지 제거
+                    sudo docker image rm ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} || true
 
-            # 최신 이미지를 Docker Hub에서 pull
-            sudo docker-compose pull
+            # 최신 이미지 pull
+                    sudo docker-compose pull
 
-            # Docker Compose로 백그라운드 실행
-            sudo docker-compose up -d
+            # 컨테이너 실행
+                    sudo docker-compose up -d
