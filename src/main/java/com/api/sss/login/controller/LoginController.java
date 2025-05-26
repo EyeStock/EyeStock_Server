@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,7 +39,7 @@ public class LoginController {
 		)
 	})
 	@PostMapping("/biometric-signup")
-	public ResponseEntity<CustomResponse<Void>> biometricSignup(@RequestBody BiometricSignupRequest request) {
+	public ResponseEntity<CustomResponse<Void>> biometricSignup(@Valid @RequestBody BiometricSignupRequest request) {
 		loginService.signup(request);
 		return ResponseEntity.ok(CustomResponse.success(SuccessStatus.SUCCESS));
 	}
