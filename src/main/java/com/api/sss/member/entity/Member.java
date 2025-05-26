@@ -24,4 +24,6 @@ public class Member {
 	private String deviceId;
 
 	private String publicKey;
+
+	private String challenge;
 }
