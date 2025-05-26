@@ -25,9 +25,4 @@ public class Member {
 
 	private String publicKey;
 
-	private String challenge;
-
-	public void updateChallenge(String challenge) {
-		this.challenge = challenge;
-	}
 }
