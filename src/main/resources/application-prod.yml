@@ -18,5 +18,10 @@ spring:
         format_sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: ${ACCESS_EXPIRATION}      # 1시간 (ms)
+  refresh-expiration: ${REFRESH_EXPIRATION}
+
 server:
   port: 8080
