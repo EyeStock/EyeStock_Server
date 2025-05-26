@@ -10,4 +10,6 @@ import com.api.sss.member.entity.Member;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByDeviceId(String deviceId);
+
+	boolean existsByDeviceId(String deviceId);
 }
