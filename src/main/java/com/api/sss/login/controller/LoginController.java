@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.sss.config.response.dto.CustomResponse;
 import com.api.sss.config.response.dto.SuccessStatus;
+import com.api.sss.login.dto.BiometricLoginStartRequest;
+import com.api.sss.login.dto.BiometricLoginStartResponse;
 import com.api.sss.login.dto.BiometricSignupRequest;
 import com.api.sss.login.service.LoginService;
 
@@ -42,5 +44,27 @@ public class LoginController {
 	public ResponseEntity<CustomResponse<Void>> biometricSignup(@Valid @RequestBody BiometricSignupRequest request) {
 		loginService.signup(request);
 		return ResponseEntity.ok(CustomResponse.success(SuccessStatus.SUCCESS));
+	}
+
+	@Operation(summary = "지문 로그인 시작 API", description = "deviceId로 challenge를 발급하여 반환합니다.")
+	@ApiResponse(
+		responseCode = "200",
+		description = "challenge 발급 성공"
+	)
+	@ApiResponse(
+		responseCode = "404",
+		description = "등록되지 않은 deviceId",
+		content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+        {
+          "code": 404,
+          "message": "해당 사용자를 찾을 수 없습니다."
+        }
+        """))
+	)
+	@PostMapping("/biometric-login/start")
+	public ResponseEntity<CustomResponse<BiometricLoginStartResponse>> biometricLoginStart(
+		@Valid @RequestBody BiometricLoginStartRequest request) {
+		BiometricLoginStartResponse response = loginService.startLogin(request);
+		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
 	}
 }
