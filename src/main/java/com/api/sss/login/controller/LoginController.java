@@ -10,6 +10,8 @@ import com.api.sss.config.response.dto.CustomResponse;
 import com.api.sss.config.response.dto.SuccessStatus;
 import com.api.sss.login.dto.BiometricLoginStartRequest;
 import com.api.sss.login.dto.BiometricLoginStartResponse;
+import com.api.sss.login.dto.BiometricLoginVerifyRequest;
+import com.api.sss.login.dto.BiometricLoginVerifyResponse;
 import com.api.sss.login.dto.BiometricSignupRequest;
 import com.api.sss.login.service.LoginService;
 
@@ -65,6 +67,38 @@ public class LoginController {
 	public ResponseEntity<CustomResponse<BiometricLoginStartResponse>> biometricLoginStart(
 		@Valid @RequestBody BiometricLoginStartRequest request) {
 		BiometricLoginStartResponse response = loginService.startLogin(request);
+		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
+	}
+
+	@Operation(summary = "지문 로그인 검증 API", description = "challenge 및 signature를 검증하고 토큰을 발급합니다.")
+	@ApiResponse(
+		responseCode = "200",
+		description = "토큰 발급 성공"
+	)
+	@ApiResponse(
+		responseCode = "400",
+		description = "challenge 또는 signature가 유효하지 않음",
+		content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+    {
+      "code": 400,
+      "message": "유효하지 않은 challenge 또는 signature입니다."
+    }
+    """))
+	)
+	@ApiResponse(
+		responseCode = "404",
+		description = "등록되지 않은 deviceId",
+		content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+    {
+      "code": 404,
+      "message": "해당 사용자를 찾을 수 없습니다."
+    }
+    """))
+	)
+	@PostMapping("/biometric-login/verify")
+	public ResponseEntity<CustomResponse<BiometricLoginVerifyResponse>> biometricLoginVerify(
+		@Valid @RequestBody BiometricLoginVerifyRequest request) {
+		BiometricLoginVerifyResponse response = loginService.verifyLogin(request);
 		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
 	}
 }
