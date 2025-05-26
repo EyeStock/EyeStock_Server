@@ -20,6 +20,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Replace secrets in prod.yml
+        run: |
+          cd ./src/main/resources
+          sed -i 's|${EC2_HOST}|'"${{ secrets.EC2_HOST }}"'|g' application-prod.yml
+          sed -i 's|${DB_NAME}|'"${{ secrets.DB_NAME }}"'|g' application-prod.yml
+          sed -i 's|${DB_USER}|'"${{ secrets.DB_USER }}"'|g' application-prod.yml
+          sed -i 's|${DB_PWD}|'"${{ secrets.DB_PWD }}"'|g' application-prod.yml
+
       - name: Grant execute permission for Gradle
         run: chmod +x gradlew
 
@@ -59,6 +67,11 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           script: |
+            cd ~/app
+            echo "DB_NAME=${{ secrets.DB_NAME }}" > .env
+            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+            echo "DB_PWD=${{ secrets.DB_PWD }}" >> .env
+            
             cd ~/app
             sudo docker rm -f app-server || true
             sudo docker compose down || true
