@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.api.sss.config.exception.CustomException;
 import com.api.sss.config.exception.ErrorCode;
+import com.api.sss.jwt.util.JwtTokenProvider;
 import com.api.sss.login.dto.BiometricLoginStartRequest;
 import com.api.sss.login.dto.BiometricLoginStartResponse;
 import com.api.sss.login.dto.BiometricLoginVerifyRequest;
@@ -30,6 +31,7 @@ public class LoginService {
 
 	private final MemberRepository memberRepository;
 	private final RedisTemplate<String, String> redisTemplate;
+	private final JwtTokenProvider jwtTokenProvider;
 
 	private static final Duration CHALLENGE_TTL = Duration.ofMinutes(3);
 
@@ -81,9 +83,16 @@ public class LoginService {
 		// ✅ 성공했으면 challenge 제거
 		redisTemplate.delete(redisKey);
 
-		// ✅ JWT 발급 (임의 예시)
+		// ✅ JWT 발급
 		String accessToken = jwtTokenProvider.createAccessToken(member.getId());
 		String refreshToken = jwtTokenProvider.createRefreshToken(member.getId());
+
+		// ✅ refreshToken Redis 저장 (key: refresh_token:{userId})
+		redisTemplate.opsForValue().set(
+			"refresh_token:" + member.getId(),
+			refreshToken,
+			Duration.ofDays(7)
+		);
 
 		return new BiometricLoginVerifyResponse(accessToken, refreshToken);
 	}
