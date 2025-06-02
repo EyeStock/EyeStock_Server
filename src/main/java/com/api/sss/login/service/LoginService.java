@@ -19,6 +19,8 @@ import com.api.sss.login.dto.BiometricLoginStartResponse;
 import com.api.sss.login.dto.BiometricLoginVerifyRequest;
 import com.api.sss.login.dto.BiometricLoginVerifyResponse;
 import com.api.sss.login.dto.BiometricSignupRequest;
+import com.api.sss.login.dto.RefreshTokenRequest;
+import com.api.sss.login.dto.RefreshTokenResponse;
 import com.api.sss.member.entity.Member;
 import com.api.sss.member.repository.MemberRepository;
 
@@ -122,6 +124,34 @@ public class LoginService {
 		} catch (Exception e) {
 			return false; // 예외 발생 시 검증 실패로 처리
 		}
+	}
+
+	@Transactional
+	public RefreshTokenResponse reissue(RefreshTokenRequest request) {
+		String refreshToken = request.getRefreshToken();
+
+		jwtTokenProvider.validateOrThrow(refreshToken);
+
+		Long userId = jwtTokenProvider.getUserId(refreshToken);
+
+		String storedToken = redisTemplate.opsForValue().get("refresh_token:" + userId);
+		if (storedToken == null || !storedToken.equals(refreshToken)) {
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+		}
+
+		// 토큰 재발급
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId);
+		String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+
+		// 기존 refreshToken 제거 후 새로 저장 (갱신 방식)
+		redisTemplate.delete("refresh_token:" + userId);
+		redisTemplate.opsForValue().set(
+			"refresh_token:" + userId,
+			newRefreshToken,
+			Duration.ofDays(7)
+		);
+
+		return new RefreshTokenResponse(newAccessToken, newRefreshToken);
 	}
 
 
