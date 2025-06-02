@@ -13,6 +13,8 @@ import com.api.sss.login.dto.BiometricLoginStartResponse;
 import com.api.sss.login.dto.BiometricLoginVerifyRequest;
 import com.api.sss.login.dto.BiometricLoginVerifyResponse;
 import com.api.sss.login.dto.BiometricSignupRequest;
+import com.api.sss.login.dto.RefreshTokenRequest;
+import com.api.sss.login.dto.RefreshTokenResponse;
 import com.api.sss.login.service.LoginService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -99,6 +101,31 @@ public class LoginController {
 	public ResponseEntity<CustomResponse<BiometricLoginVerifyResponse>> biometricLoginVerify(
 		@Valid @RequestBody BiometricLoginVerifyRequest request) {
 		BiometricLoginVerifyResponse response = loginService.verifyLogin(request);
+		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
+	}
+
+	@Operation(
+		summary = "토큰 재발급 API",
+		description = "유효한 refreshToken을 통해 accessToken과 refreshToken을 재발급합니다."
+	)
+	@ApiResponse(
+		responseCode = "200",
+		description = "토큰 재발급 성공"
+	)
+	@ApiResponse(
+		responseCode = "400",
+		description = "refreshToken이 유효하지 않음",
+		content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+    {
+      "code": 400,
+      "message": "Refresh Token이 유효하지 않습니다."
+    }
+    """))
+	)
+	@PostMapping("/reissue")
+	public ResponseEntity<CustomResponse<RefreshTokenResponse>> reissue(
+		@Valid @RequestBody RefreshTokenRequest request) {
+		RefreshTokenResponse response = loginService.reissue(request);
 		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
 	}
 }

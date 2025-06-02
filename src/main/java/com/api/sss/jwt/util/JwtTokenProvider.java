@@ -5,9 +5,15 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.api.sss.config.exception.CustomException;
+import com.api.sss.config.exception.ErrorCode;
+
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -53,5 +59,17 @@ public class JwtTokenProvider {
 		return Long.parseLong(claims.getSubject());
 	}
 
-
+	public void validateOrThrow(String token) {
+		try {
+			Jwts.parserBuilder()
+				.setSigningKey(secretKey)
+				.build()
+				.parseClaimsJws(token);
+		} catch (ExpiredJwtException e) {
+			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+		} catch (UnsupportedJwtException | MalformedJwtException |
+				 SecurityException | IllegalArgumentException e) {
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		}
+	}
 }
