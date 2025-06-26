@@ -51,7 +51,7 @@ public class ChatController {
 	public ResponseEntity<CustomResponse<ChatAskResponse>> askQuestion(
 		@Valid @RequestBody ChatAskRequest request) {
 
-		String fastApiUrl = "http://203.153.148.56:5050/chatting";
+		String fastApiUrl = "http://203.153.147.12:5050/chatting";
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
