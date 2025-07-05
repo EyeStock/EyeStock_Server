@@ -1,8 +1,12 @@
-package com.api.sss.jwt.util;
+package com.api.sss.jwt;
 
+import java.util.Collections;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import com.api.sss.config.exception.CustomException;
@@ -59,17 +63,41 @@ public class JwtTokenProvider {
 		return Long.parseLong(claims.getSubject());
 	}
 
-	public void validateOrThrow(String token) {
+	public Boolean validateOrThrow(String token) {
 		try {
 			Jwts.parserBuilder()
 				.setSigningKey(secretKey)
 				.build()
 				.parseClaimsJws(token);
-		} catch (ExpiredJwtException e) {
+			return true;
+		} catch (MalformedJwtException ex) {
+			System.out.println("Invalid JWT token");
+			throw new CustomException(ErrorCode.INVALID_TOKEN);
+		} catch (ExpiredJwtException ex) {
+			System.out.println("Expired JWT token");
 			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
-		} catch (UnsupportedJwtException | MalformedJwtException |
-				 SecurityException | IllegalArgumentException e) {
+		} catch (UnsupportedJwtException ex) {
+			System.out.println("Unsupported JWT token");
+			throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
+		} catch (IllegalArgumentException ex) {
+			System.out.println("JWT claims string is empty.");
 			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		}
 	}
+
+	public Authentication getAuthentication(String token) {
+		Claims claims = Jwts.parserBuilder()
+				.setSigningKey(secretKey)
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
+
+		String email = claims.getSubject();
+//		String role = claims.get("role", String.class);
+		String role = "ROLE_USER";
+
+		User principal = new User(email, "", Collections.singleton(() -> role));
+		return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
+	}
+
 }
