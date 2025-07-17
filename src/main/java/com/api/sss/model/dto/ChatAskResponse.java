@@ -8,5 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatAskResponse {
+	private String question;
 	private String answer;
+	private double elapsed_time;
 }
