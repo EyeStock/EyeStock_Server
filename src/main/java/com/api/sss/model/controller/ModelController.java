@@ -1,9 +1,11 @@
 package com.api.sss.model.controller;
 
+import com.api.sss.model.dto.NewsRequest;
+import com.api.sss.model.dto.NewsResponse;
+import com.api.sss.model.service.ModelService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,10 +29,11 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/chat")
-public class ChatController {
+@RequestMapping("/api/v1")
+public class ModelController {
 
 	RestTemplate restTemplate = new RestTemplate();
+	private final ModelService modelService;
 
 	@Operation(
 		summary = "질문 전송 API",
@@ -47,7 +50,7 @@ public class ChatController {
         }
         """))
 	)
-	@PostMapping("/ask")
+	@PostMapping("/chat/ask")
 	public ResponseEntity<CustomResponse<ChatAskResponse>> askQuestion(
 		@Valid @RequestBody ChatAskRequest request) {
 
@@ -67,5 +70,25 @@ public class ChatController {
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
 		}
+	}
+
+	@Operation(
+			summary = "카드뉴스 API",
+			description = "키워드를 입력하면 관련 뉴스 URL을 반환합니다."
+	)
+	@ApiResponse(responseCode = "200", description = "답변 수신 성공")
+	@ApiResponse(
+			responseCode = "500",
+			description = "FastAPI 서비스 오류 또는 통신 실패",
+			content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+        {
+          "code": 500,
+          "message": "FastAPI와의 통신 중 오류가 발생했습니다."
+        }
+        """))
+	)
+	@PostMapping("/news")
+	public NewsResponse getNews(@RequestBody NewsRequest request) {
+		return modelService.fetchNews(request);
 	}
 }
