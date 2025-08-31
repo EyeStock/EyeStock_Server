@@ -1,9 +1,11 @@
 package com.api.sss.model.controller;
 
+import com.api.sss.model.dto.NewsRequest;
+import com.api.sss.model.dto.NewsResponse;
+import com.api.sss.model.service.ModelService;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +27,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/chat")
-public class ChatController {
+@RequestMapping("/api/v1")
+public class ModelController {
 
 	RestTemplate restTemplate = new RestTemplate();
+	private final ModelService modelService;
 
 	@Operation(
 		summary = "질문 전송 API",
@@ -47,25 +52,31 @@ public class ChatController {
         }
         """))
 	)
-	@PostMapping("/ask")
-	public ResponseEntity<CustomResponse<ChatAskResponse>> askQuestion(
-		@Valid @RequestBody ChatAskRequest request) {
-
-		String fastApiUrl = "http://203.153.147.12:5050/chat";
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		HttpEntity<ChatAskRequest> entity = new HttpEntity<>(request, headers);
-
-		try {
-			ResponseEntity<ChatAskResponse> response = restTemplate.postForEntity(
-				fastApiUrl, entity, ChatAskResponse.class
-			);
-
-			return ResponseEntity.ok(CustomResponse.success(response.getBody(), SuccessStatus.SUCCESS));
-		} catch (Exception e) {
-			throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
-		}
+	@PostMapping("/chat/ask")
+	public CustomResponse<ChatAskResponse> askQuestion(@RequestBody ChatAskRequest request) {
+		ChatAskResponse response = modelService.askQuestion(request);
+		return CustomResponse.success(response, SuccessStatus.SUCCESS);
 	}
+
+	@Operation(
+			summary = "카드뉴스 API",
+			description = "키워드를 입력하면 관련 뉴스 URL을 반환합니다."
+	)
+	@ApiResponse(responseCode = "200", description = "답변 수신 성공")
+	@ApiResponse(
+			responseCode = "500",
+			description = "FastAPI 서비스 오류 또는 통신 실패",
+			content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+        {
+          "code": 500,
+          "message": "FastAPI와의 통신 중 오류가 발생했습니다."
+        }
+        """))
+	)
+	@PostMapping("/news")
+	public CustomResponse<List<NewsResponse.Result>> getNews(@RequestBody NewsRequest request) {
+		List<NewsResponse.Result> results = modelService.cardNews(request);
+		return CustomResponse.success(results, SuccessStatus.SUCCESS);
+	}
+
 }

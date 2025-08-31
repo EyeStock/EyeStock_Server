@@ -13,6 +13,6 @@ public class ChatAskResponse {
 	private String answer;
 	private List<String> sources;
 
-	@JsonProperty("latency_ms")  // ← 서버의 latency_ms를 매핑
+	@JsonProperty("latency_ms")  // 서버의 latency_ms를 매핑
 	private long latencyMs;
 }
