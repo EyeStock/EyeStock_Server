@@ -27,6 +27,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -72,8 +74,9 @@ public class ModelController {
         """))
 	)
 	@PostMapping("/news")
-	public CustomResponse<NewsResponse> getNews(@RequestBody NewsRequest request) {
-		NewsResponse response = modelService.cardNews(request);
-		return CustomResponse.success(response, SuccessStatus.SUCCESS);
+	public CustomResponse<List<NewsResponse.Result>> getNews(@RequestBody NewsRequest request) {
+		List<NewsResponse.Result> results = modelService.cardNews(request);
+		return CustomResponse.success(results, SuccessStatus.SUCCESS);
 	}
+
 }

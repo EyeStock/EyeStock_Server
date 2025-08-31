@@ -10,13 +10,15 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Service
 public class ModelService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String FASTAPI_URL = "http://203.153.147.12:5050";
 
-    public NewsResponse cardNews(NewsRequest request) {
+    public List<NewsResponse.Result> cardNews(NewsRequest request) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -29,7 +31,7 @@ public class ModelService {
                     entity,
                     NewsResponse.class
             );
-            return response.getBody();
+            return response.getBody().getResults();
         } catch (Exception e) {
             throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
         }
