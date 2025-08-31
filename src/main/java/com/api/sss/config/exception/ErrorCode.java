@@ -15,6 +15,7 @@ public enum ErrorCode {
     INVALID_TOKEN(401, "유효하지 않은 토큰입니다."),
     INVALID_REFRESH_TOKEN(401, "Refresh Token이 유효하지 않습니다."),
     UNSUPPORTED_TOKEN(401,"지원하지 않는 토큰입니다."),
+    FASTAPI_COMMUNICATION_ERROR(500, "FastAPI와의 통신 중 오류가 발생했습니다."),
 
     ;
 
