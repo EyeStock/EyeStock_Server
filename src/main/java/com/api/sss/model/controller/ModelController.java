@@ -51,25 +51,9 @@ public class ModelController {
         """))
 	)
 	@PostMapping("/chat/ask")
-	public ResponseEntity<CustomResponse<ChatAskResponse>> askQuestion(
-		@Valid @RequestBody ChatAskRequest request) {
-
-		String fastApiUrl = "http://203.153.147.12:5050/chat";
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		HttpEntity<ChatAskRequest> entity = new HttpEntity<>(request, headers);
-
-		try {
-			ResponseEntity<ChatAskResponse> response = restTemplate.postForEntity(
-				fastApiUrl, entity, ChatAskResponse.class
-			);
-
-			return ResponseEntity.ok(CustomResponse.success(response.getBody(), SuccessStatus.SUCCESS));
-		} catch (Exception e) {
-			throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
-		}
+	public CustomResponse<ChatAskResponse> askQuestion(@RequestBody ChatAskRequest request) {
+		ChatAskResponse response = modelService.askQuestion(request);
+		return CustomResponse.success(response, SuccessStatus.SUCCESS);
 	}
 
 	@Operation(
@@ -88,7 +72,8 @@ public class ModelController {
         """))
 	)
 	@PostMapping("/news")
-	public NewsResponse getNews(@RequestBody NewsRequest request) {
-		return modelService.fetchNews(request);
+	public CustomResponse<NewsResponse> getNews(@RequestBody NewsRequest request) {
+		NewsResponse response = modelService.cardNews(request);
+		return CustomResponse.success(response, SuccessStatus.SUCCESS);
 	}
 }
