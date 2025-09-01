@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.api.sss.config.exception.CustomException;
 import com.api.sss.config.exception.ErrorCode;
-import com.api.sss.jwt.util.JwtTokenProvider;
+import com.api.sss.jwt.JwtTokenProvider;
 import com.api.sss.login.dto.BiometricLoginStartRequest;
 import com.api.sss.login.dto.BiometricLoginStartResponse;
 import com.api.sss.login.dto.BiometricLoginVerifyRequest;
