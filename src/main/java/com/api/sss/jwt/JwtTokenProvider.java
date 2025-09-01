@@ -1,5 +1,7 @@
 package com.api.sss.jwt;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Collections;
 import java.util.Date;
 
@@ -18,11 +20,13 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
+
 	@Value("${jwt.secret}")
 	private String secretKey;
 
@@ -31,6 +35,10 @@ public class JwtTokenProvider {
 
 	@Value("${jwt.refresh-expiration}")
 	private long refreshTokenValidity;
+
+	private Key getSigningKey() {
+		return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+	}
 
 	public String createAccessToken(Long userId) {
 		return createToken(userId, accessTokenValidity);
@@ -45,20 +53,19 @@ public class JwtTokenProvider {
 		Date expiry = new Date(now.getTime() + validity);
 
 		return Jwts.builder()
-			.setSubject(userId.toString())
-			.setIssuedAt(now)
-			.setExpiration(expiry)
-			.signWith(SignatureAlgorithm.HS256, secretKey)
-			.compact();
+				.setSubject(userId.toString())
+				.setIssuedAt(now)
+				.setExpiration(expiry)
+				.signWith(getSigningKey(), SignatureAlgorithm.HS256)
+				.compact();
 	}
 
-	//JWT 안에 들어있는 사용자 식별자 (userId)를 꺼내기 위한 메소드
 	public Long getUserId(String token) {
 		Claims claims = Jwts.parserBuilder()
-			.setSigningKey(secretKey)
-			.build()
-			.parseClaimsJws(token)
-			.getBody();
+				.setSigningKey(getSigningKey())
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
 
 		return Long.parseLong(claims.getSubject());
 	}
@@ -66,38 +73,32 @@ public class JwtTokenProvider {
 	public Boolean validateOrThrow(String token) {
 		try {
 			Jwts.parserBuilder()
-				.setSigningKey(secretKey)
-				.build()
-				.parseClaimsJws(token);
+					.setSigningKey(getSigningKey())
+					.build()
+					.parseClaimsJws(token);
 			return true;
 		} catch (MalformedJwtException ex) {
-			System.out.println("Invalid JWT token");
 			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		} catch (ExpiredJwtException ex) {
-			System.out.println("Expired JWT token");
 			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
 		} catch (UnsupportedJwtException ex) {
-			System.out.println("Unsupported JWT token");
 			throw new CustomException(ErrorCode.UNSUPPORTED_TOKEN);
 		} catch (IllegalArgumentException ex) {
-			System.out.println("JWT claims string is empty.");
 			throw new CustomException(ErrorCode.INVALID_TOKEN);
 		}
 	}
 
 	public Authentication getAuthentication(String token) {
 		Claims claims = Jwts.parserBuilder()
-				.setSigningKey(secretKey)
+				.setSigningKey(getSigningKey())
 				.build()
 				.parseClaimsJws(token)
 				.getBody();
 
-		String email = claims.getSubject();
-//		String role = claims.get("role", String.class);
+		String subject = claims.getSubject();
 		String role = "ROLE_USER";
 
-		User principal = new User(email, "", Collections.singleton(() -> role));
+		User principal = new User(subject, "", Collections.singleton(() -> role));
 		return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
 	}
-
 }
