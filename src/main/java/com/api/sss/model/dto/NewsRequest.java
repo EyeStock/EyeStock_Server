@@ -6,7 +6,7 @@ import java.util.List;
 
 @Getter
 public class NewsRequest {
-    private List<String> keywords;
+    private String question;
     private int days;
     private int max_links;
 
