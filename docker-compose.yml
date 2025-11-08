@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   app-server:
-    image: happine2s/eye-stock
+    image: sujeongmoon/eye-stock
     container_name: eye-server
     ports:
       - "8080:8080"
