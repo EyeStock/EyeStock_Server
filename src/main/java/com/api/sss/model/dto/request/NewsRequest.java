@@ -1,8 +1,6 @@
-package com.api.sss.model.dto;
+package com.api.sss.model.dto.request;
 
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 public class NewsRequest {

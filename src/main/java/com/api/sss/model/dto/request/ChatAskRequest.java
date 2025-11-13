@@ -1,4 +1,4 @@
-package com.api.sss.model.dto;
+package com.api.sss.model.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

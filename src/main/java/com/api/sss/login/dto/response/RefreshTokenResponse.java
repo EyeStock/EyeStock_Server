@@ -1,4 +1,4 @@
-package com.api.sss.login.dto;
+package com.api.sss.login.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.api.sss.login.dto;
+package com.api.sss.login.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
