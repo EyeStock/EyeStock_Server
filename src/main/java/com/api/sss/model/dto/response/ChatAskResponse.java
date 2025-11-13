@@ -1,4 +1,4 @@
-package com.api.sss.model.dto;
+package com.api.sss.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

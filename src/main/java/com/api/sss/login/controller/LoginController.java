@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.sss.config.response.dto.CustomResponse;
 import com.api.sss.config.response.dto.SuccessStatus;
-import com.api.sss.login.dto.BiometricLoginStartRequest;
-import com.api.sss.login.dto.BiometricLoginStartResponse;
-import com.api.sss.login.dto.BiometricLoginVerifyRequest;
-import com.api.sss.login.dto.BiometricLoginVerifyResponse;
-import com.api.sss.login.dto.BiometricSignupRequest;
-import com.api.sss.login.dto.RefreshTokenRequest;
-import com.api.sss.login.dto.RefreshTokenResponse;
+import com.api.sss.login.dto.request.BiometricLoginStartRequest;
+import com.api.sss.login.dto.response.BiometricLoginStartResponse;
+import com.api.sss.login.dto.request.BiometricLoginVerifyRequest;
+import com.api.sss.login.dto.response.BiometricLoginVerifyResponse;
+import com.api.sss.login.dto.request.BiometricSignupRequest;
+import com.api.sss.login.dto.request.RefreshTokenRequest;
+import com.api.sss.login.dto.response.RefreshTokenResponse;
 import com.api.sss.login.service.LoginService;
 
 import io.swagger.v3.oas.annotations.Operation;

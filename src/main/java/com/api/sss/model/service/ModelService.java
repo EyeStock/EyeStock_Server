@@ -2,10 +2,10 @@ package com.api.sss.model.service;
 
 import com.api.sss.config.exception.CustomException;
 import com.api.sss.config.exception.ErrorCode;
-import com.api.sss.model.dto.ChatAskRequest;
-import com.api.sss.model.dto.ChatAskResponse;
-import com.api.sss.model.dto.NewsRequest;
-import com.api.sss.model.dto.NewsResponse;
+import com.api.sss.model.dto.request.ChatAskRequest;
+import com.api.sss.model.dto.response.ChatAskResponse;
+import com.api.sss.model.dto.request.NewsRequest;
+import com.api.sss.model.dto.response.NewsResponse;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
