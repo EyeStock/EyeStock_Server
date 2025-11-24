@@ -26,14 +26,14 @@ import lombok.RequiredArgsConstructor;
 public class SttService {
 
 	private final SpeechClient speechClient;
+	private final ModelService modelService;
 
 	public ChatPredictResponse predictCoin(@RequestParam("file") MultipartFile file) {
 		String coinName = transcribe(file);
-		// 임시 종목명 리턴 중 (FastAPI 미구현)
+
 		return ChatPredictResponse.builder()
-			.prediction(coinName)
+			.prediction(modelService.predictCoin(coinName))
 			.build();
-		// return 진짜값으로 변경 필요
 	}
 
 	public String transcribe(MultipartFile file) {
