@@ -74,6 +74,7 @@ jobs:
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
             echo "ACCESS_EXPIRATION=${{ secrets.ACCESS_EXPIRATION }}" >> .env
             echo "REFRESH_EXPIRATION=${{ secrets.REFRESH_EXPIRATION }}" >> .env
+            echo "GCP_STT_KEY=${{ secrets.GCP_STT_KEY }}" >> .env
             
             cd ~/app
             sudo docker rm -f app-server || true

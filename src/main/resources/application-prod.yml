@@ -18,6 +18,11 @@ spring:
         format_sql: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
+  cloud:
+    gcp:
+      credentials:
+        encoded-key: ${GCP_STT_KEY}
+
 jwt:
   secret: ${JWT_SECRET}
   access-expiration: ${ACCESS_EXPIRATION}      # 1시간 (ms)
