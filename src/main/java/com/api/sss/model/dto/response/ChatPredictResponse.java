@@ -1,4 +1,4 @@
-package com.api.sss.stt.dto.response;
+package com.api.sss.model.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
