@@ -57,7 +57,7 @@ dependencies {
 
 	// stt
 	implementation 'com.google.cloud:google-cloud-speech:4.72.0'
-	implementation 'com.google.protobuf:protobuf-java'
+	implementation 'com.google.protobuf:protobuf-java:3.25.5'
 }
 
 tasks.named('test') {
