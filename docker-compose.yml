@@ -7,6 +7,10 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET=${JWT_SECRET}
+      - ACCESS_EXPIRATION=${ACCESS_EXPIRATION}
+      - REFRESH_EXPIRATION=${REFRESH_EXPIRATION}
+      - GCP_STT_KEY=${GCP_STT_KEY}
   redis:
     image: redis:7.2
     container_name: redis-server
