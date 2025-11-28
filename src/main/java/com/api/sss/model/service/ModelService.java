@@ -1,8 +1,6 @@
 package com.api.sss.model.service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -26,13 +24,19 @@ public class ModelService {
 
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final String FASTAPI_URL = "http://203.153.147.12:5050";
+	private final CoinTickerService coinTickerService;
 
+	public ModelService(CoinTickerService coinTickerService) {
+		this.coinTickerService = coinTickerService;
+	}
 
 	public ChatPredictResponse predictCoin(ChatPredictRequest request) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		HttpEntity<ChatPredictRequest> entity = new HttpEntity<>(request, headers);
+
+		String coinTicker = coinTickerService.getCoinTicker(request.getCoinName());
 
 		try {
 			// TODO: return response.getBody();
@@ -43,13 +47,12 @@ public class ModelService {
 			// 	String.class
 			// );
 			return ChatPredictResponse.builder()
-				.prediction(request.getCoinName())
+				.prediction(coinTicker)
 				.build();
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
 		}
 	}
-
 
 	public List<NewsResponse.Result> cardNews(NewsRequest request) {
 		HttpHeaders headers = new HttpHeaders();
@@ -88,6 +91,5 @@ public class ModelService {
 			throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
 		}
 	}
-
 
 }
