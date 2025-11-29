@@ -1,21 +1,22 @@
-package com.api.sss.login.controller;
+package com.api.sss.auth.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.sss.config.response.dto.CustomResponse;
 import com.api.sss.config.response.dto.SuccessStatus;
-import com.api.sss.login.dto.request.BiometricLoginStartRequest;
-import com.api.sss.login.dto.response.BiometricLoginStartResponse;
-import com.api.sss.login.dto.request.BiometricLoginVerifyRequest;
-import com.api.sss.login.dto.response.BiometricLoginVerifyResponse;
-import com.api.sss.login.dto.request.BiometricSignupRequest;
-import com.api.sss.login.dto.request.RefreshTokenRequest;
-import com.api.sss.login.dto.response.RefreshTokenResponse;
-import com.api.sss.login.service.LoginService;
+import com.api.sss.auth.dto.request.BiometricLoginStartRequest;
+import com.api.sss.auth.dto.response.BiometricLoginStartResponse;
+import com.api.sss.auth.dto.request.BiometricLoginVerifyRequest;
+import com.api.sss.auth.dto.response.BiometricLoginVerifyResponse;
+import com.api.sss.auth.dto.request.BiometricSignupRequest;
+import com.api.sss.auth.dto.request.RefreshTokenRequest;
+import com.api.sss.auth.dto.response.RefreshTokenResponse;
+import com.api.sss.auth.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,8 +29,8 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-public class LoginController {
-	private final LoginService loginService;
+public class AuthController {
+	private final AuthService authService;
 
 	@Operation(summary = "지문 로그인 회원가입 API", description = "device-id와 publicKey 저장하는 회원가입 API입니다.")
 	@ApiResponses(value = {
@@ -46,7 +47,7 @@ public class LoginController {
 	})
 	@PostMapping("/biometric-signup")
 	public ResponseEntity<CustomResponse<Void>> biometricSignup(@Valid @RequestBody BiometricSignupRequest request) {
-		loginService.signup(request);
+		authService.signup(request);
 		return ResponseEntity.ok(CustomResponse.success(SuccessStatus.SUCCESS));
 	}
 
@@ -68,7 +69,7 @@ public class LoginController {
 	@PostMapping("/biometric-login/start")
 	public ResponseEntity<CustomResponse<BiometricLoginStartResponse>> biometricLoginStart(
 		@Valid @RequestBody BiometricLoginStartRequest request) {
-		BiometricLoginStartResponse response = loginService.startLogin(request);
+		BiometricLoginStartResponse response = authService.startLogin(request);
 		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
 	}
 
@@ -100,7 +101,7 @@ public class LoginController {
 	@PostMapping("/biometric-login/verify")
 	public ResponseEntity<CustomResponse<BiometricLoginVerifyResponse>> biometricLoginVerify(
 		@Valid @RequestBody BiometricLoginVerifyRequest request) {
-		BiometricLoginVerifyResponse response = loginService.verifyLogin(request);
+		BiometricLoginVerifyResponse response = authService.verifyLogin(request);
 		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
 	}
 
@@ -125,7 +126,46 @@ public class LoginController {
 	@PostMapping("/reissue")
 	public ResponseEntity<CustomResponse<RefreshTokenResponse>> reissue(
 		@Valid @RequestBody RefreshTokenRequest request) {
-		RefreshTokenResponse response = loginService.reissue(request);
+		RefreshTokenResponse response = authService.reissue(request);
 		return ResponseEntity.ok(CustomResponse.success(response, SuccessStatus.SUCCESS));
+	}
+
+	@Operation(
+		summary = "로그아웃 API",
+		description = """
+			현재 Authorization 헤더에 포함된 Access Token의 소유자를 로그아웃 처리합니다.
+			- 서버에서는 Access Token에서 userId를 추출한 뒤, 해당 유저의 refreshToken을 Redis에서 삭제합니다.
+			- 이 후에는 해당 유저는 토큰 재발급이 불가능하며, 다시 로그인해야 합니다.
+			"""
+	)
+	@ApiResponses(value = {
+		@ApiResponse(
+			responseCode = "200",
+			description = "로그아웃 성공",
+			content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+	        {
+	          "code": 200,
+	          "message": "로그아웃에 성공했습니다.",
+	          "data": null
+	        }
+	        """))
+		),
+		@ApiResponse(
+			responseCode = "401",
+			description = "유효하지 않은 또는 만료된 Access Token",
+			content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+	        {
+	          "code": 401,
+	          "message": "유효하지 않은 토큰입니다."
+	        }
+	        """))
+		)
+	})
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(
+		@RequestHeader("Authorization") String authorizationHeader
+	) {
+		authService.logout(authorizationHeader);
+		return ResponseEntity.ok().build();
 	}
 }

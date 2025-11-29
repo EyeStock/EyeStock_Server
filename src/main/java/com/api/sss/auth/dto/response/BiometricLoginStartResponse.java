@@ -1,4 +1,4 @@
-package com.api.sss.login.dto.response;
+package com.api.sss.auth.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
