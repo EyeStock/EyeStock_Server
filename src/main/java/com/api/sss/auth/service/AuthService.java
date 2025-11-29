@@ -1,4 +1,4 @@
-package com.api.sss.login.service;
+package com.api.sss.auth.service;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -14,13 +14,13 @@ import org.springframework.stereotype.Service;
 import com.api.sss.config.exception.CustomException;
 import com.api.sss.config.exception.ErrorCode;
 import com.api.sss.jwt.JwtTokenProvider;
-import com.api.sss.login.dto.request.BiometricLoginStartRequest;
-import com.api.sss.login.dto.response.BiometricLoginStartResponse;
-import com.api.sss.login.dto.request.BiometricLoginVerifyRequest;
-import com.api.sss.login.dto.response.BiometricLoginVerifyResponse;
-import com.api.sss.login.dto.request.BiometricSignupRequest;
-import com.api.sss.login.dto.request.RefreshTokenRequest;
-import com.api.sss.login.dto.response.RefreshTokenResponse;
+import com.api.sss.auth.dto.request.BiometricLoginStartRequest;
+import com.api.sss.auth.dto.response.BiometricLoginStartResponse;
+import com.api.sss.auth.dto.request.BiometricLoginVerifyRequest;
+import com.api.sss.auth.dto.response.BiometricLoginVerifyResponse;
+import com.api.sss.auth.dto.request.BiometricSignupRequest;
+import com.api.sss.auth.dto.request.RefreshTokenRequest;
+import com.api.sss.auth.dto.response.RefreshTokenResponse;
 import com.api.sss.member.entity.Member;
 import com.api.sss.member.repository.MemberRepository;
 
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class LoginService {
+public class AuthService {
 
 	private final MemberRepository memberRepository;
 	private final RedisTemplate<String, String> redisTemplate;
@@ -152,6 +152,17 @@ public class LoginService {
 		);
 
 		return new RefreshTokenResponse(newAccessToken, newRefreshToken);
+	}
+
+	@Transactional
+	public void logout(String accessToken) {
+		if (accessToken.startsWith("Bearer ")) {
+			accessToken = accessToken.substring(7);
+		}
+
+		jwtTokenProvider.validateOrThrow(accessToken);
+		Long userId = jwtTokenProvider.getUserId(accessToken);
+		redisTemplate.delete("refresh_token:" + userId);
 	}
 
 
