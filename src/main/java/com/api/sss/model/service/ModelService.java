@@ -14,6 +14,7 @@ import com.api.sss.config.exception.CustomException;
 import com.api.sss.config.exception.ErrorCode;
 import com.api.sss.model.dto.request.ChatAskRequest;
 import com.api.sss.model.dto.request.ChatPredictRequest;
+import com.api.sss.model.dto.request.ChatPredictTickerRequest;
 import com.api.sss.model.dto.request.NewsRequest;
 import com.api.sss.model.dto.response.ChatAskResponse;
 import com.api.sss.model.dto.response.ChatPredictResponse;
@@ -23,7 +24,8 @@ import com.api.sss.model.dto.response.NewsResponse;
 public class ModelService {
 
 	private final RestTemplate restTemplate = new RestTemplate();
-	private final String FASTAPI_URL = "http://203.153.147.12:5050";
+	// private final String FASTAPI_URL = "http://203.153.147.12:5050";
+	private final String FASTAPI_URL = "http://localhost:5050";
 	private final CoinTickerService coinTickerService;
 
 	public ModelService(CoinTickerService coinTickerService) {
@@ -34,21 +36,26 @@ public class ModelService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		HttpEntity<ChatPredictRequest> entity = new HttpEntity<>(request, headers);
-
 		String coinTicker = coinTickerService.getCoinTicker(request.getCoinName());
+		ChatPredictTickerRequest chatPredictTickerRequest = ChatPredictTickerRequest.builder()
+			.coinTicker(coinTicker)
+			.build();
+		HttpEntity<ChatPredictTickerRequest> entity = new HttpEntity<>(chatPredictTickerRequest, headers);
 
 		try {
-			// TODO: return response.getBody();
-			// ResponseEntity<String> response = restTemplate.exchange(
-			// 	FASTAPI_URL + "/chat/predict",
-			// 	HttpMethod.POST,
-			// 	entity,
-			// 	String.class
-			// );
-			return ChatPredictResponse.builder()
-				.prediction(coinTicker)
-				.build();
+			ResponseEntity<ChatPredictResponse> response = restTemplate.exchange(
+				FASTAPI_URL + "/chat/predict",
+				HttpMethod.POST,
+				entity,
+				ChatPredictResponse.class
+			);
+
+			ChatPredictResponse body = response.getBody();
+			if (body != null) {
+				body.setCoinName(request.getCoinName());
+			}
+
+			return body;
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.FASTAPI_COMMUNICATION_ERROR);
 		}
